@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import pathlib
 
 from yarl import URL
 from typing import Union, Dict, List
@@ -81,14 +82,22 @@ async def main() -> None:
     # Construct the argument parser
     ap = argparse.ArgumentParser(description='scan list of urls')
     # Add the arguments to the parser
-    ap.add_argument('urls', metavar='u', type=str, nargs='+', help='list of urls')
+    # ap.add_argument('urls', metavar='u', type=str, nargs='+', help='list of urls')
+    ap.add_argument(
+        '--input', type=pathlib.Path, metavar='PATH', dest='path_to_urls',
+        help='Path to file with input. Example: "/wd/input.txt"',
+    )
 
     args = ap.parse_args()
+    urls = args.path_to_urls.read_text().splitlines()
 
-    results = await RequestManager.create_make_requests(urls=args.urls, timeout=5)
+    results = await RequestManager.create_make_requests(urls=urls, timeout=5)
+    write_results_to_file(results)
 
-    with open(RESULT_FILE_NAME, 'w') as result_file:
-        result_file.write(json.dumps(results))
+
+def write_results_to_file(results: List[Dict[str, Union[str, int]]]) -> None:
+    with open(RESULT_FILE_NAME, 'w') as file:
+        file.write(json.dumps(results))
 
 
 if __name__ == '__main__':
