@@ -260,6 +260,9 @@ fabric.properties
 ### Poetry
 poetry.lock
 
+### Pyenv
+.python-version
+
 ### Other
 result.json
 input.txt
