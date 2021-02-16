@@ -114,5 +114,5 @@ def write_results_to_file(results: ASYNCIO_GATHER_TYPE) -> None:
 
 if __name__ == '__main__':
     loop: AbstractEventLoop = asyncio.get_event_loop()
-    loop.set_debug(True)
+    loop.set_debug(False)
     loop.run_until_complete(main())
