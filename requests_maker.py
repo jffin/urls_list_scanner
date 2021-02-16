@@ -65,7 +65,7 @@ class RequestManager:
                 'content_length': 0, 'stream_reader': 0, 'body_length': 0,
                 'error': e and str(e) or 'Something Went Wrong'
             })
-        else:
+        finally:
             return result
 
     async def make_request(self) -> ASYNCIO_GATHER_TYPE:
