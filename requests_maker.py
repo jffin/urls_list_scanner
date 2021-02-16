@@ -1,31 +1,38 @@
 #!/usr/bin/env python
+
+import json
 import pathlib
 
 from yarl import URL
-from typing import Union, Dict, List
-
-import json
+from typing import Union, Dict, List, Tuple, Any, Type
 
 import asyncio
 import argparse
 
+from asyncio import AbstractEventLoop
 from asyncio.exceptions import TimeoutError
 
 from aiohttp import ClientSession, ClientTimeout, InvalidURL, \
     ClientConnectorError, ClientResponseError, ServerTimeoutError, TCPConnector
 
-REQUESTS_LIMIT = 100
+ASYNCIO_GATHER_TYPE: Type = Tuple[
+    Union[BaseException, Any], Union[BaseException, Any],
+    Union[BaseException, Any], Union[BaseException, Any], Union[BaseException, Any]
+]
 
-USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)' \
+REQUESTS_LIMIT: int = 100
+
+USER_AGENT: str = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)' \
              ' Chrome/85.0.4183.102 Safari/537.36'
 
-RESULT_FILE_NAME = 'result.json'
+RESULT_FILE_NAME: str = 'result.json'
 
 
 class RequestManager:
     _urls: List[URL]
     _timeout: ClientTimeout
     _session: ClientSession
+    headers: Dict[str, str]
 
     def __init__(self, urls: List[str], timeout: int = 60):
         self._urls = [URL(url) for url in urls]
@@ -34,15 +41,15 @@ class RequestManager:
         self.headers = {'User-agent': USER_AGENT}
 
     @classmethod
-    async def create_make_requests(cls, urls: List[str], timeout: int = 60) -> List[Dict[str, Union[str, int]]]:
-        obj = cls(urls=urls, timeout=timeout)
+    async def create_make_requests(cls, urls: List[str], timeout: int = 60) -> ASYNCIO_GATHER_TYPE:
+        obj: RequestManager = cls(urls=urls, timeout=timeout)
         return await obj.make_request()
 
     async def _fetch(self, url: URL, session: ClientSession) -> Dict[str, Union[str, int]]:
-        result = {'url': str(url)}
+        result: Dict[str, str] = {'url': str(url)}
         try:
             async with session.get(url, headers=self.headers) as response:
-                content_length = 0
+                content_length: str = '0'
                 if 'content-length' in response.headers:
                     content_length = response.headers['content-length']
                 result.update({
@@ -61,9 +68,11 @@ class RequestManager:
         else:
             return result
 
-    async def make_request(self) -> List[Dict[str, Union[str, int]]]:
+    async def make_request(self) -> ASYNCIO_GATHER_TYPE:
         async with self.session as session:
-            return [await self._fetch(url=url, session=session) for url in self.urls]
+            return await asyncio.gather(
+                *[self._fetch(url=url, session=session) for url in self.urls], return_exceptions=True,
+            )
 
     @property
     def urls(self) -> List[URL]:
@@ -80,7 +89,7 @@ class RequestManager:
 
 async def main() -> None:
     # Construct the argument parser
-    ap = argparse.ArgumentParser(description='scan list of urls')
+    ap: argparse.ArgumentParser = argparse.ArgumentParser(description='scan list of urls')
     # Add the arguments to the parser
     # ap.add_argument('urls', metavar='u', type=str, nargs='+', help='list of urls')
     ap.add_argument(
@@ -88,18 +97,18 @@ async def main() -> None:
         help='Path to file with input. Example: "/wd/input.txt"',
     )
 
-    args = ap.parse_args()
-    urls = args.path_to_urls.read_text().splitlines()
+    args: argparse.Namespace = ap.parse_args()
+    urls: List[str] = args.path_to_urls.read_text().splitlines()
 
-    results = await RequestManager.create_make_requests(urls=urls, timeout=5)
+    results: ASYNCIO_GATHER_TYPE = await RequestManager.create_make_requests(urls=urls, timeout=5)
     write_results_to_file(results)
 
 
-def write_results_to_file(results: List[Dict[str, Union[str, int]]]) -> None:
+def write_results_to_file(results: ASYNCIO_GATHER_TYPE) -> None:
     with open(RESULT_FILE_NAME, 'w') as file:
         file.write(json.dumps(results))
 
 
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
+    loop: AbstractEventLoop = asyncio.get_event_loop()
     loop.run_until_complete(main())
