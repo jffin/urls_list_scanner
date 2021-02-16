@@ -76,7 +76,7 @@ class RequestManager:
                 asyncio.ensure_future(
                     self._fetch(url=url, session=session, semaphore=asyncio_semaphore)
                 ) for url in self.urls
-            ], return_exceptions=True, )
+            ])
 
     @property
     def urls(self) -> List[URL]:
