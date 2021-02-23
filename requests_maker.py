@@ -50,12 +50,10 @@ class RequestManager:
             result: Dict[str, str] = {'url': str(url)}
             try:
                 async with session.get(url, headers=self.headers) as response:
-                    content_length: str = '0'
-                    if 'content-length' in response.headers:
-                        content_length = response.headers['content-length']
                     result.update({
                         'status_code': response.status,
-                        'content_length': content_length,
+                        'content_length': 'content-length' in response.headers
+                                          and response.headers['content-length'] or 0,
                         'stream_reader': response.content.total_bytes,
                         'body_length': len(await response.read()),
                         'error': '',
