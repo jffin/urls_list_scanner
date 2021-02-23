@@ -43,7 +43,7 @@ class RequestManager:
     @classmethod
     async def create_make_requests(cls, urls: List[str], timeout: int = 60) -> ASYNCIO_GATHER_TYPE:
         obj: RequestManager = cls(urls=urls, timeout=timeout)
-        return await obj.make_request()
+        return await obj.make_requests()
 
     async def _fetch(self, url: URL, session: ClientSession, semaphore: BoundedSemaphore) -> Dict[str, Union[str, int]]:
         async with semaphore:
@@ -69,7 +69,7 @@ class RequestManager:
             finally:
                 return result
 
-    async def make_request(self) -> ASYNCIO_GATHER_TYPE:
+    async def make_requests(self) -> ASYNCIO_GATHER_TYPE:
         asyncio_semaphore = asyncio.BoundedSemaphore(SIMULTANEOUS_CONCURRENT_TASKS)
         async with self.session as session:
             return await asyncio.gather(*[
