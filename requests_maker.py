@@ -90,15 +90,7 @@ class RequestManager:
 
 
 async def main() -> None:
-    # Construct the argument parser
-    ap: argparse.ArgumentParser = argparse.ArgumentParser(description='scan list of urls')
-    # Add the arguments to the parser
-    ap.add_argument(
-        '--input', type=pathlib.Path, metavar='PATH', dest='path_to_urls',
-        help='Path to file with input. Example: "/wd/input.txt"',
-    )
-
-    args: argparse.Namespace = ap.parse_args()
+    args: argparse.Namespace = cli()
     urls: List[str] = args.path_to_urls.read_text().splitlines()
 
     results: ASYNCIO_GATHER_TYPE = await RequestManager.create_make_requests(urls=urls, timeout=5)
@@ -108,6 +100,21 @@ async def main() -> None:
 def write_results_to_file(results: ASYNCIO_GATHER_TYPE) -> None:
     with open(RESULT_FILE_NAME, 'w') as file:
         file.write(json.dumps(results))
+
+
+def cli() -> argparse.Namespace:
+    """
+    here we define args to run the script with
+    :return: argparse.Namespace
+    """
+    parser: argparse.ArgumentParser = argparse.ArgumentParser(description='scan list of urls')
+    # Add the arguments to the parser
+    parser.add_argument(
+        '--input', type=pathlib.Path, metavar='PATH', dest='path_to_urls',
+        help='Path to file with input. Example: "/wd/input.txt"',
+    )
+
+    return parser.parse_args()
 
 
 if __name__ == '__main__':
