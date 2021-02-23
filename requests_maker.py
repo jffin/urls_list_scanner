@@ -9,7 +9,7 @@ from typing import Union, Dict, List, Tuple, Any, Type
 import asyncio
 import argparse
 
-from asyncio import AbstractEventLoop, BoundedSemaphore
+from asyncio import BoundedSemaphore
 from asyncio.exceptions import TimeoutError
 
 from aiohttp import ClientSession, ClientTimeout, InvalidURL, \
@@ -73,7 +73,7 @@ class RequestManager:
         asyncio_semaphore = asyncio.BoundedSemaphore(SIMULTANEOUS_CONCURRENT_TASKS)
         async with self.session as session:
             return await asyncio.gather(*[
-                asyncio.ensure_future(
+                asyncio.create_task(
                     self._fetch(url=url, session=session, semaphore=asyncio_semaphore)
                 ) for url in self.urls
             ])
@@ -113,6 +113,4 @@ def write_results_to_file(results: ASYNCIO_GATHER_TYPE) -> None:
 
 
 if __name__ == '__main__':
-    loop: AbstractEventLoop = asyncio.get_event_loop()
-    loop.set_debug(False)
-    loop.run_until_complete(main())
+    asyncio.run(main(), debug=True)
