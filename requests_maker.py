@@ -111,4 +111,4 @@ def write_results_to_file(results: ASYNCIO_GATHER_TYPE) -> None:
 
 
 if __name__ == '__main__':
-    asyncio.run(main(), debug=True)
+    asyncio.run(main(), debug=False)
