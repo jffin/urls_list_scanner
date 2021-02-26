@@ -20,7 +20,7 @@ ASYNCIO_GATHER_TYPE: Type = Tuple[
     Union[BaseException, Any], Union[BaseException, Any], Union[BaseException, Any]
 ]
 
-SIMULTANEOUS_CONCURRENT_TASKS: int = 51
+SIMULTANEOUS_CONCURRENT_TASKS: int = 1001
 
 LIMIT_OF_ATTEMPTS_TO_RETRY: int = 5
 
