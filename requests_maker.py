@@ -22,6 +22,8 @@ ASYNCIO_GATHER_TYPE: Type = Tuple[
 
 SIMULTANEOUS_CONCURRENT_TASKS: int = 51
 
+LIMIT_OF_ATTEMPTS_TO_RETRY: int = 5
+
 USER_AGENT: str = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)' \
                   ' Chrome/85.0.4183.102 Safari/537.36'
 
@@ -48,24 +50,30 @@ class RequestManager:
     async def _fetch(self, url: URL, session: ClientSession, semaphore: BoundedSemaphore) -> Dict[str, Union[str, int]]:
         async with semaphore:
             result: Dict[str, str] = {'url': str(url)}
-            try:
-                async with session.get(url, headers=self.headers) as response:
-                    result.update({
-                        'status_code': response.status,
-                        'content_length': 'content-length' in response.headers
-                                          and response.headers['content-length'] or 0,
-                        'stream_reader': response.content.total_bytes,
-                        'body_length': len(await response.read()),
-                        'error': '',
-                    })
-            except (ClientConnectorError, ClientResponseError, ServerTimeoutError, TimeoutError, InvalidURL) as e:
-                result.update({
-                    'status_code': 0,
-                    'content_length': 0, 'stream_reader': 0, 'body_length': 0,
-                    'error': e and str(e) or 'Something Went Wrong'
-                })
-            finally:
-                return result
+            left_of_attempts_to_retry: int = LIMIT_OF_ATTEMPTS_TO_RETRY
+            while left_of_attempts_to_retry:
+                try:
+                    async with session.get(url, headers=self.headers) as response:
+                        result.update({
+                            'status_code': response.status,
+                            'content_length': 'content-length' in response.headers
+                                              and response.headers['content-length'] or 0,
+                            'stream_reader': response.content.total_bytes,
+                            'body_length': len(await response.read()),
+                            'error': '',
+                        })
+                        left_of_attempts_to_retry = 0
+                except (ClientConnectorError, ClientResponseError, ServerTimeoutError, TimeoutError, InvalidURL) as e:
+                    left_of_attempts_to_retry -= 1
+                    if not left_of_attempts_to_retry:
+                        result.update({
+                            'status_code': 0,
+                            'content_length': 0, 'stream_reader': 0, 'body_length': 0,
+                            'error': e and str(e) or 'Something Went Wrong'
+                        })
+                    else:
+                        continue
+            return result
 
     async def make_requests(self) -> ASYNCIO_GATHER_TYPE:
         asyncio_semaphore = asyncio.BoundedSemaphore(SIMULTANEOUS_CONCURRENT_TASKS)
