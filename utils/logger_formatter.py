@@ -10,7 +10,7 @@ class OneLineExceptionFormatter(logging.Formatter):
         return repr(result)
 
     def format(self, record: logging.LogRecord) -> str:
-        result = super().format(record)
+        result = super().format(record)  # todo
         if record.exc_text:
             result = result.replace('\n', '')
         return result

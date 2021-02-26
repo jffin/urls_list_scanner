@@ -21,20 +21,6 @@ class RunConfig(NamedTuple):
     output: str = RESULT_FILE_NAME
 
 
-async def main() -> None:
-    args: argparse.Namespace = cli()
-    config: RunConfig = define_config_from_cmd(args)
-
-    OneLineExceptionFormatter.logger_initialisation(config.verbose)
-    logging.log(logging.DEBUG, 'Main Started')
-
-    urls: List[str] = config.path_to_urls.read_text().splitlines()
-    logging.log(logging.DEBUG, f'Got {len(urls)} from file with name: {args.path_to_urls}')
-
-    results: ASYNCIO_GATHER_TYPE = await RequestManager.create_make_requests(urls=urls, timeout=TIMEOUT)
-    write_results_to_file(results)
-
-
 def write_results_to_file(results: ASYNCIO_GATHER_TYPE) -> None:
     with open(RESULT_FILE_NAME, 'w') as file:
         file.write(json.dumps(results))
@@ -70,6 +56,21 @@ def cli() -> argparse.Namespace:
     parser.add_argument('-o', '--output', type=str, default=RESULT_FILE_NAME, required=False, help='Output file name')
 
     return parser.parse_args()
+
+
+async def main() -> None:
+    args: argparse.Namespace = cli()
+    config: RunConfig = define_config_from_cmd(args)
+
+    OneLineExceptionFormatter.logger_initialisation(config.verbose)
+    logging.log(logging.DEBUG, 'Main Started')
+
+    urls: List[str] = config.path_to_urls.read_text().splitlines()
+    logging.log(logging.DEBUG, f'Got {len(urls)} from file with name: {args.path_to_urls}')
+
+    results: ASYNCIO_GATHER_TYPE = await RequestManager.create_make_requests(urls=urls, timeout=TIMEOUT)
+
+    write_results_to_file(results)
 
 
 if __name__ == '__main__':
