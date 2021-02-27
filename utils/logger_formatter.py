@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# coding=utf-8
+
 import os
 import logging
 
@@ -10,7 +13,8 @@ class OneLineExceptionFormatter(logging.Formatter):
         return repr(result)
 
     def format(self, record: logging.LogRecord) -> str:
-        result = super().format(record)  # todo
+        # noinspection StrFormat
+        result = super().format(record)
         if record.exc_text:
             result = result.replace('\n', '')
         return result
