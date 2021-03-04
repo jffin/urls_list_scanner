@@ -10,9 +10,9 @@ import argparse
 from time import time
 from typing import List, NamedTuple
 
-from utils.logger_formatter import OneLineExceptionFormatter
 from utils.request_manager import RequestManager
-from utils.contants import DEFAULT_DEBUGGING, RESULT_FILE_NAME, ASYNCIO_GATHER_TYPE, TIMEOUT
+from utils.logger_formatter import OneLineExceptionFormatter
+from utils.constants import DEFAULT_DEBUGGING, RESULT_FILE_NAME, ASYNCIO_GATHER_TYPE, TIMEOUT
 
 
 class RunConfig(NamedTuple):

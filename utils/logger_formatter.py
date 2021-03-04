@@ -4,7 +4,7 @@
 import os
 import logging
 
-from utils.contants import EXC_INFO_TYPE
+from utils.constants import EXC_INFO_TYPE
 
 
 class OneLineExceptionFormatter(logging.Formatter):

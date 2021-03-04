@@ -10,7 +10,7 @@ from asyncio.exceptions import TimeoutError
 from aiohttp import ClientSession, ClientTimeout, InvalidURL, \
     ClientConnectorError, ClientResponseError, ServerTimeoutError, TCPConnector
 
-from utils.contants import TIMEOUT_DEFAULT, SIMULTANEOUS_CONCURRENT_TASKS, USER_AGENT, LIMIT_OF_ATTEMPTS_TO_RETRY, \
+from utils.constants import TIMEOUT_DEFAULT, SIMULTANEOUS_CONCURRENT_TASKS, USER_AGENT, LIMIT_OF_ATTEMPTS_TO_RETRY, \
     CONTENT_LENGTH_DEFAULT, REQUESTS_RETRIES_NUM_TO_REMOVE, STATUS_CODE_DEFAULT, ASYNCIO_GATHER_TYPE, \
     STREAM_READER_DEFAULT, BODY_LENGTH_DEFAULT
 
